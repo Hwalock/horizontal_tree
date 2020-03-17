@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset=utf-8>
+	<meta name=viewport content="width=device-width,initial-scale=1">
+	<title>FExam</title>
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
+	<style>
+		html,
+		body {
+			padding: 0;
+			margin: 0;
+			height: 100%;
+			width: 100%;
+		}
+
+		#app {
+			width: 100%;
+			height: 100%;
+			animation: sherin 1s;
+		}
+
+		.divTable {
+			/* border: 1px solid #00FF00; */
+			display: table;
+		}
+
+		@keyframes sherin {
+			from {
+				opacity: 0;
+			}
+
+			to {
+				opacity: 1;
+			}
+		}
+
+		.divTableBody {
+			display: table-row-group;
+		}
+
+		.divTableRow {
+			display: table-row;
+		}
+
+		.divTableCell {
+			/* border: 1px solid #FF0000; */
+			display: table-cell;
+		}
+
+		.card {
+			width: 150px;
+			height: 50px;
+
+			border: 1px solid #0000FF;
+			background-color: cornflowerblue;
+
+			text-align: center;
+			vertical-align: middle;
+			line-height: 50px;
+
+			margin: 20px;
+			/* margin-top: 10px;
+			margin-left: 10px;
+			margin-right: 10px; */
+		}
+
+		svg {
+			width: 100%;
+			height: 100%;
+			/* overflow: hidden; */
+		}
+
+		path {
+			stroke: #AAAAAA;
+			fill: none;
+			stroke-width: 4;
+			stroke-linecap: round;
+
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app">
+		<div class="divTable" style="position: fixed; top: 0px; left: 0px;">
+			<tree-br v-for="(root, index) in roots.tr" :root="root" :key="index"></tree-br>
+		</div>
+		<svg xmlns="http://www.w3.org/2000/svg">
+			<g id="svg_line" />
+		</svg>
+	</div>
+
+	<script>
+		Vue.component('tree-br', {
+			template: `
+			<div class="divTable">
+				<div class="divTableBody">
+					<div class="divTableRow">
+						<div class="divTableCell">
+							<div :id="'mid_'+root.mid" class="card">{{root.mid}}</div>
+						</div>
+						<div class="divTableCell" v-if="root.br && root.cbr > 0">
+							<tree-br v-for="(root, index) in root.br" :root="root" :key="index"></tree-br>
+						</div>
+					</div>
+				</div>
+			</div>
+			`,
+			props: {
+				root: Object,
+				nodes: Array
+			}
+		});
+		var vm = new Vue({
+			el: '#app',
+			data: {
+				roots: JSON.parse('{"tr":[{"mid":"1","br":[{"mid":"2","br":[{"mid":"4","br":null,"cbr":0},{"mid":"5","br":' +
+					'[{"mid":"6","br":null,"cbr":0},{"mid":"9","br":null,"cbr":0}],"cbr":2}],"cbr":2},{"mid":"3","br":' +
+					'[{"mid":"7","br":null,"cbr":0}],"cbr":1},{"mid":"11","br":null,"cbr":0}],"cbr":3},{"mid":"8","br":' +
+					'[{"mid":"10","br":null,"cbr":0}],"cbr":1}],"ctr":2}')
+			},
+			mounted() {
+				let tr = this.roots.tr
+				for (let i = 0; i < tr.length; i++) {
+					this.getMap(tr[i].mid, tr[i].br);
+				}
+			},
+			computed: {
+			},
+			methods: {
+				getMap(fa, bb) {
+					for (let i = 0; bb && i < bb.length; i++) {
+
+						var p1 = document.querySelector("#mid_" + fa);
+						var p2 = document.querySelector("#mid_" + bb[i].mid);
+						var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+						var dStrPath =
+							'M' + this.rightCenterX(p1) + ',' + this.rightCenterY(p1) + ' ' +
+							'H' + this.midOfX(p1, p2) + ' ' +
+							'V' + this.leftCenterY(p2) + ' ' +
+							'H' + this.leftCenterX(p2);
+						path.setAttribute("d", dStrPath);
+
+						document.querySelector("#svg_line").appendChild(path);
+
+						// recursively
+						this.getMap(bb[i].mid, bb[i].br);
+					}
+				},
+				rightCenterX(p) {
+					return p.offsetLeft + p.clientWidth;
+				},
+				rightCenterY(p) {
+					return p.offsetTop + p.clientHeight / 2;
+				},
+				midOfX(p1, p2) {
+					var x1 = p1.offsetLeft + p1.clientWidth;
+					var x2 = p2.offsetLeft;
+
+					return (x2 - x1) / 2 + x1;
+				},
+				leftCenterX(p) {
+					return p.offsetLeft;
+				},
+				leftCenterY(p) {
+					return p.offsetTop + p.clientHeight / 2;
+				},
+
+			}
+		});
+
+
+	</script>
+
+</body>
+
+</html>
